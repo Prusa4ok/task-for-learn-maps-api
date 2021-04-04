@@ -2,7 +2,7 @@
 
 
 
-### установка
+### Установка
 ```
 npm run serve и npm install
 ```
