@@ -1,19 +1,14 @@
 # google_maps
 
-## Project setup
-```
-npm install
-```
+
 
 ### Compiles and hot-reloads for development
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Как пользоваться
 ```
-npm run build
+Введите адрес отправки и выберете один из предложенных вариантов, затем так-же введите адрес доставки, после нажмите кнопку отправить.
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
