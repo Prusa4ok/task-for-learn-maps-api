@@ -54,6 +54,7 @@ export default {
       return Loader;
     },
     
+    //инициализация карты
     async initMap() {
       const options = { libraries: ["drawing", "places", "geometry"] };
       const Loader = this.load();
@@ -62,8 +63,11 @@ export default {
         options
       );
 
+      //получение гугл методов
       this.google = await loader.load();
       const self = this;
+
+      //дополнение прототипа, определение стартовой точки для расчёта дистанции
       this.google.maps.LatLng.prototype.distanceFrom = function (newLatLng) {
         const EarthRadiusMeters = 6378137.0; // meters
         const lat1 = this.lat();
@@ -83,7 +87,7 @@ export default {
         return d;
       };
 
-      // === A method which returns the length of a path in metres ===
+      //дополнение прототипа расчётом дистанции между ствртовой и конечной точкой
       this.google.maps.Polygon.prototype.Distance = function () {
         let dist = 0;
         for (let i = 1; i < this.getPath().getLength(); i++) {
@@ -94,12 +98,10 @@ export default {
         return dist;
       };
 
-      // === A method which returns a GLatLng of a point a given distance along the path ===
-      // === Returns null if the path is shorter than the specified distance ===
+      //получение географических точек дистанции
       this.google.maps.Polygon.prototype.GetPointAtDistance = function (
         metres = 1
       ) {
-        // some awkward special cases
         if (!metres) metres = 0;
         if (metres == 0) return this.getPath().getAt(0);
         if (metres < 0) return null;
@@ -125,7 +127,7 @@ export default {
         return outLatLong;
       };
 
-      // === A method which returns an array of GLatLngs of points a given interval along the path ===
+      //получение массива географических точек вдоль пути
       this.google.maps.Polygon.prototype.GetPointsAtDistance = function (
         metres
       ) {
@@ -155,8 +157,7 @@ export default {
         return points;
       };
 
-      // === A method which returns the Vertex number at a given distance along the path ===
-      // === Returns null if the path is shorter than the specified distance ===
+      //возвращение числа вершин вдоль пути
       this.google.maps.Polygon.prototype.GetIndexAtDistance = function (
         metres
       ) {
@@ -175,7 +176,8 @@ export default {
         }
         return i;
       };
-      // === Copy all the above functions to GPolyline ===
+
+      //сбор необходимых функций в прототипе полилиний
       this.google.maps.Polyline.prototype.Distance = this.google.maps.Polygon.prototype.Distance;
       this.google.maps.Polyline.prototype.GetPointAtDistance = this.google.maps.Polygon.prototype.GetPointAtDistance;
       this.google.maps.Polyline.prototype.GetPointsAtDistance = this.google.maps.Polygon.prototype.GetPointsAtDistance;
@@ -187,6 +189,7 @@ export default {
         mapTypeId: google.maps.MapTypeId.ROADMAP,
       });
 
+      //автозаполнение адресного инпута
       new AutocompleteDirectionsHandler(this.map);
       this.createMarker();
 
@@ -208,6 +211,7 @@ export default {
       });
     },
     
+    //проверка на пустые инпуты
     checkInputsValue() {
       const startPointValue = document.querySelector('#start').value;
       const endPointValue = document.querySelector('#end').value;
@@ -219,6 +223,7 @@ export default {
       }
     },
 
+    //отрисовка пути
     calcRoute() {
       if (this.timerHandle) {
         clearTimeout(this.timerHandle);
@@ -247,6 +252,8 @@ export default {
       );
       const start = document.getElementById("start").value;
       const end = document.getElementById("end").value;
+
+      //можно выбрать пеший путь-WALKING, или общественный транспорт-TRANSITION
       const travelMode = google.maps.DirectionsTravelMode.DRIVING;
 
       const request = {
@@ -259,11 +266,9 @@ export default {
           this.directionsDisplay.setDirections(response);
 
           const bounds = new this.google.maps.LatLngBounds();
-          // const route = response.routes[0];
           this.startLocation = new Object();
           this.endLocation = new Object();
 
-          // const path = response.routes[0].overview_path;
           const legs = response.routes[0].legs;
           for (let i = 0; i < legs.length; i++) {
             if (i === 0) {
@@ -289,6 +294,7 @@ export default {
       });
     },
 
+    //определяем свойства маркера, в данном случа машина
     createMarker(latlng = { lat: 43.23713, lng: 76.9152 }) {
       const car =
         "M17.402,0H5.643C2.526,0,0,3.467,0,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759c3.116,0,5.644-2.527,5.644-5.644 V6.584C23.044,3.467,20.518,0,17.402,0z M22.057,14.188v11.665l-2.729,0.351v-4.806L22.057,14.188z M20.625,10.773 c-1.016,3.9-2.219,8.51-2.219,8.51H4.638l-2.222-8.51C2.417,10.773,11.3,7.755,20.625,10.773z M3.748,21.713v4.492l-2.73-0.349 V14.502L3.748,21.713z M1.018,37.938V27.579l2.73,0.343v8.196L1.018,37.938z M2.575,40.882l2.218-3.336h13.771l2.219,3.336H2.575z M19.328,35.805v-7.872l2.729-0.355v10.048L19.328,35.805z";
@@ -309,6 +315,7 @@ export default {
       });
     },
 
+    //отрисовка маршрута
     updatePoly(d) {
       if (this.poly2.getPath().getLength() > 20) {
         this.poly2 = new this.google.maps.Polyline([
@@ -333,6 +340,7 @@ export default {
       }
     },
 
+    //передвижение маркера от стратовой к конечной точке
     animate(d) {
       if (d > this.eol) {
         this.map.panTo(this.endLocation.latlng);
